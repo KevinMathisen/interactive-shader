@@ -3,6 +3,7 @@ const { SerialPort } = require("serialport")
 
 // Initialize websocket server
 const wss = new WebSocket.Server({ port: 8080 })
+console.log("Websocket open on port 8080.")
 
 // Serial port setup
 const port = new SerialPort({
@@ -11,7 +12,9 @@ const port = new SerialPort({
 })
 let stream = "";
 // Potentiometer values
-let sensors = {v1: 0, v2: 0}
+let sensors = {v1: 0, v2: 0, v3: 0}
+// Minimum change of sensor value to trigger update to websocket
+const sensor_filter = 4
 
 // sends updated values to all websocket clients
 function update_val(sensor) {
@@ -45,21 +48,22 @@ port.on("data", data => {
     // Parse incoming data from stream based on following syntax
     //  '^[val1] [val2]$' 
     stream += data.toString()
-    let parsed = stream.match(/\^(\d+) (\d+)\$/)
+    let parsed = stream.match(/\^(\d+) (\d+) (\d+)\$/)
 
     // If parsing was sucsessful
     if (parsed) {
         // parse data to num
-        let [v1, v2] = parsed.slice(1).map(Number)
+        let [v1, v2, v3] = parsed.slice(1).map(Number)
         stream = ""
         
         // change detected
-        if ( v1 != sensors.v1 || v2 != sensors.v2) {
-            sensors = {v1: v1, v2: v2}
+        if ( Math.abs(v1 - sensors.v1) >= sensor_filter || Math.abs(v2 - sensors.v2) >= sensor_filter || Math.abs(v3 - sensors.v3) >= sensor_filter) {
+            sensors = {v1: v1, v2: v2, v3: v3}
             update_val(sensors)
+            console.log(`v1: ${v1}, v2: ${v2}, v3: ${v3}`)
         }
 
-        console.log(`v1: ${v1}, v2: ${v2}`)
+        
     }
 })
 
