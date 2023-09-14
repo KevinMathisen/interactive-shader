@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebSocket Client</title>
+</head>
+<body>
+  <h1>WebSocket Client</h1>
+  <div id="messages"></div>
+
+  <script>
+    const ws = new WebSocket('ws://localhost:8080'); 
+
+    ws.onopen = () => {
+      appendMessage('Connected to WebSocket server');
+    };
+
+    ws.onmessage = (event) => {
+      appendMessage(`Received: ${event.data}`);
+    };
+
+    ws.onclose = () => {
+      appendMessage('Disconnected from WebSocket server');
+    };
+
+    function appendMessage(message) {
+      const messagesDiv = document.getElementById('messages');
+      const messageP = document.createElement('p');
+      messageP.textContent = message;
+      messagesDiv.appendChild(messageP);
+    }
+  </script>
+</body>
+</html>
