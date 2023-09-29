@@ -95,7 +95,7 @@
 let stats = new Stats();
 compileTimePanel = stats.addPanel(new Stats.Panel('CT MS', '#ff8', '#221'));
 stats.showPanel(1);
-document.body.appendChild(stats.domElement);
+//document.body.appendChild(stats.domElement);
 requestAnimationFrame(function loop() {
     stats.update();
     requestAnimationFrame(loop);
@@ -138,12 +138,27 @@ uniform float       uCustomValue3;
 
 #define SHADER_TOY
 
+vec3 cyclicRange(float value)
+{
+    // Ensure the value is within the range [0, 100]
+    value = clamp(value, 0.0, 100.0);
+
+    // Calculate the fractional part of value
+    float fracPart = fract(value / 100.0);
+
+    // Calculate the cyclic pattern
+    float r = mix(0.5, 1.0, fracPart);           // R component
+    float g = mix(0.5, 1.0, fract(fracPart * 2.0)); // G component
+    float b = mix(0.5, 1.0, fract(fracPart * 3.0)); // B component
+
+    return vec3(r, g, b);
+}
 
 // cosine based palette, 4 vec3 params
 vec3 palette( in float t )
 {
-    vec3 a = vec3(0.5, 0.5, uCustomValue3);
-    vec3 b = vec3(0.5, uCustomValue3, 0.5	);
+    vec3 a = cyclicRange(uCustomValue3);
+    vec3 b = vec3(0.5, 0.5, 0.5	);
     vec3 c = vec3(2.0, 1.0, 0.0);
     vec3 d = vec3(0.50, 0.20, 0.25);
     
@@ -152,14 +167,16 @@ vec3 palette( in float t )
 }
 
 
+
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     float a = uCustomValue1;   // initial size fractal
     float b = 1.6;   // iterative size fractal
-    float c = uCustomValue2; // size of render in relation to length from center
-    float d = 5.;   // size of render 2
-    float e = 5.0;
-    float f = 0.04;  // brightness
+    float c = 50.; // size of render in relation to length from center
+    float d = 1.0;   // size of render 2
+    float e = 5.0;  // number of iterations
+    float f = 0.03;  // brightness
+    float t = uCustomValue2;  // Time multiplier
     
     // Final color
     vec3 finalColor = vec3(0.0);
@@ -174,7 +191,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     uv = fract(uv*a)-0.5;
     for (float i = 0.; i < e; i++) {
         // Coordinates in relation to new centers
-        uv = fract(uv*(b+i/e))-0.5;
+        uv = fract(uv*b)-0.5;
 
         // length from center
         float len_l = length(uv);
@@ -183,13 +200,13 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         float len_l_c = len_l * exp(-len_c);
 
         // Base color
-        vec3 col = palette(len_c+iTime/3.0)*i/8.;
-        col.y = palette(len_l+iTime/5.0).y;
-        col.z = palette(len_l+iTime/1.).z;
+        vec3 col = palette(len_c+iTime*0.4+i*0.4);
+        //col.y = palette(len_l+iTime/5.0).y;
+        //col.z = palette(len_l+iTime/1.).z;
 
         // Make a sin function of d and time 
-        float multiplier = sin(len_l_c *c+ iTime+ i/4.);
-        multiplier = pow(f / abs(multiplier), 1.2);
+        float multiplier = sin(len_l_c *c+ t*iTime+ i/4.);  // c and t
+        multiplier = pow(f / abs(multiplier), 1.2);         // f 
         
 
 
@@ -803,8 +820,8 @@ void main() {
     // Websocket ----------------------------------------------------------------------
     const minInput = 0;
     const maxInput = 1023;
-    const minOutputs = [0., 1., 0.];
-    const maxOutputs = [3., 40., 1.5];
+    const minOutputs = [0., 0., 0.];
+    const maxOutputs = [0.7, 1, 100.];
 
     function convertSerialToShader(input, i) {
         return (input - minInput) / (maxInput - minInput) * (maxOutputs[i] - minOutputs[i]) + minOutputs[i]
