@@ -10,27 +10,28 @@ const port = new SerialPort({
     path: "COM3",
     baudRate: 9600
 })
-let stream = "";
-// Potentiometer values
-let sensors = {v1: 0, v2: 0, v3: 0}
-// Minimum change of sensor value to trigger update to websocket
-const sensor_filter = 4
 
-// sends updated values to all websocket clients
+let stream = "";                    // Serial stream buffer
+let sensors = {v1: 0, v2: 0, v3: 0} // Potentiometer values
+const sensor_filter = 4             // Minimum change of sensor value to trigger update to websocket
+
+
+// Sends updated values to all websocket clients
 function update_val(sensor) {
-    //console.log(`B1: ${v1}, B2: ${v2}`)
+    console.log(`B1: ${v1}, B2: ${v2}`)
     
     try {
-        //fetch(`http://localhost:3006/sensors?v1=${v1}&v2=${v2}`)
-
         wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
                 const sensorJson = JSON.stringify(sensor)
                 client.send(sensorJson)
             }
         })
-    } catch (error) { }
+    } catch (error) {
+        console.log(error)
+     }
 }
+
 
 // Log Websocket connections
 wss.on('connection', (ws) => {
@@ -41,6 +42,7 @@ wss.on('connection', (ws) => {
       console.log('WebSocket client disconnected');
     });
 });
+
 
 // Handle incoming serialstream
 port.on("data", data => {
@@ -62,8 +64,6 @@ port.on("data", data => {
             update_val(sensors)
             console.log(`v1: ${v1}, v2: ${v2}, v3: ${v3}`)
         }
-
-        
     }
 })
 

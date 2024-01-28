@@ -1,10 +1,10 @@
-//Constants:
-const int potPin0 = A0; //pin A0 to read analog input
-const int potPin1 = A1;
+// Constants
+const int potPin0 = A0; 
+const int potPin1 = A1; 
 const int potPin2 = A2;
 
-//Variables:
-int value1; //save analog value
+// Variables
+int value1; 
 int value2;
 int value3;
 
