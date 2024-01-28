@@ -18,7 +18,7 @@ const sensor_filter = 4             // Minimum change of sensor value to trigger
 
 // Sends updated values to all websocket clients
 function update_val(sensor) {
-    console.log(`B1: ${v1}, B2: ${v2}`)
+    console.log(`V1: ${sensors.v1}, V2: ${sensors.v1}, V3: ${sensors.v3}`)
     
     try {
         wss.clients.forEach((client) => {
